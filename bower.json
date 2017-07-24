@@ -3,7 +3,20 @@
   "description": "Element for managing an owner&#39;s buildings",
   "main": "ct-owner-buildings.html",
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.4.0"
+    "polymer": "Polymer/polymer#^1.4.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.3.2",
+    "iron-a11y-announcer": "PolymerElements/iron-a11y-announcer#^1.0.5",
+    "iron-behaviors": "PolymerElements/iron-behaviors#^1.0.17",
+    "paper-input": "PolymerElements/paper-input#^1.1.23",
+    "paper-item": "PolymerElements/paper-item#^1.2.1",
+    "paper-styles": "PolymerElements/paper-styles#^1.2.0",
+    "paper-listbox": "PolymerElements/paper-listbox#^1.1.2",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.5.0",
+    "paper-dialog": "PolymerElements/paper-dialog#^1.1.0",
+    "paper-button": "PolymerElements/paper-button#v1.0.15",
+    "ct-owners-api": "centular-elements/ct-owners-api",
+    "ct-shared-styles": "git://github.com/Centular/shared-styles.git",
+    "ct-core-utils": "git://github.com/centular-elements/ct-core-utils"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
