@@ -1,0 +1,34 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+`ct-owner-buildings`
+Element for managing an owner&#39;s buildings
+
+@demo demo/index.html 
+-->
+
+<dom-module id="ct-owner-buildings">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>Hello [[prop1]]</h2>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'ct-owner-buildings',
+
+      properties: {
+        prop1: {
+          type: String,
+          value: 'ct-owner-buildings',
+        },
+      },
+
+    });
+  </script>
+</dom-module>
