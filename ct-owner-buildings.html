@@ -1,34 +1,170 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+
+<link rel="import" href="../ct-core-utils/ct-api-consumer-behaviour.html">
+<link rel="import" href="../ct-owners-api/ct-owners-api.html">
+<link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
 
 <!--
-`ct-owner-buildings`
-Element for managing an owner&#39;s buildings
+`ct-search-owner`
+Element for searching across owners
 
-@demo demo/index.html 
+@demo demo/index.html
 -->
 
 <dom-module id="ct-owner-buildings">
   <template>
-    <style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style is="custom-styles">
       :host {
         display: block;
+        --paper-input-container:  {
+          border-top:1px solid #ccc;
+          border-left:1px solid #ccc;
+          border-right:1px solid #ccc;
+          border-bottom: none;
+          padding: 0;
+        };
+        /*padding to move from border */
+        --paper-input-container-label: {
+          margin-left: 10px;
+        };
+        --paper-input-container-label-floating: {
+          margin-left: 10px;
+        };
+      }
+      .main-section {
+        margin-top:20px;
+      }
+      paper-dropdown-menu.custom-dropdown {
+        width: 100%;
+        --paper-input-container: {
+          border-top:1px solid #ccc;
+          border-left:1px solid #ccc;
+          border-right:1px solid #ccc;
+          border-bottom: none;
+          padding: 0;
+          margin-bottom: 8px;
+        };
+        --paper-input-container-input: {
+          padding-left: 10px;
+        };
+      }
+      .search-field {
+        margin-bottom: 10px;
       }
     </style>
-    <h2>Hello [[prop1]]</h2>
-  </template>
 
+    <ct-owners-api id="ownersApi"></ct-owners-api>
+
+    <div class="main-section">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-2 bordered">
+            <paper-button class="btn btn-primary btn-block" on-tap="_newBuildingTapped" raised>New Building</paper-button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-12">
+            <!--<template is="dom-if" if="{{_computeHasData(userList)}}">-->
+            <div class="table-responsive">
+              <table class="table table-striped table-bordered table-hover table-middle">
+                <thead>
+                  <th>Building Name</th>
+                  <th>Address</th>
+                  <th># Water Meters</th>
+                  <th># Elec Meters</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </thead>
+                <iron-a11y-keys id="a11y" keys="enter" on-keys-pressed="_searchTapped"></iron-a11y-keys>
+                <tr>
+                  <td><paper-input id="txtBuildingName" label="Building Name"></paper-input></td>
+                  <td><paper-input id="txtAddress" label="Address"></paper-input></td>
+                  <td></td>
+                  <td></td>
+                  <td><paper-input id="menuStatus" label="Status"></paper-input></td>
+                  <td><paper-button class="btn btn-primary btn-block" on-tap="_searchTapped" raised>Search</paper-button></td>
+                </tr>
+                <tbody>
+                <template is="dom-repeat" items="{{ _buildings }}">
+                  <tr>
+                    <td>[[item.name]]</td>
+                    <td>UC</td>
+                    <td>UC</td>
+                    <td>UC</td>
+                    <td>UC</td>
+                    <td class="text-center"><paper-button class="table-button btn-primary btn-sm" on-tap="_viewBuildingTapped" raised>View/Edit</paper-button></td>
+                  </tr>
+                </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </template>
   <script>
+
     Polymer({
 
       is: 'ct-owner-buildings',
+      behaviors: [CT.Behaviours.ApiConsumer],
 
       properties: {
-        prop1: {
-          type: String,
-          value: 'ct-owner-buildings',
-        },
+        ownerId: String,
+        refreshing: {
+          type: Boolean,
+          notify: true
+        }
       },
 
+      ready: function() {
+        this._init();
+      },
+
+      refresh: function() {
+        this._init();
+      },
+
+      _init: function() {
+        //this.refreshing = true;
+        this._getAllOwnerBuildings();
+      },
+
+      _getAllOwnerBuildings: function() {
+        // ToDo:
+/*        this.$.ownersApi.filterOwnerBuildings('1', '20')
+                .then(this._setPropertyResponseResults.bind(this, '_ownersList'))
+                .catch(this.fire.bind(this, 'toast', {message: 'Failed to load owners', type: 'danger'}))
+                .finally(this.set.bind(this, 'refreshing', false));*/
+      },
+
+      _searchTapped: function (e) {
+        // ToDo:
+/*        var buildingName = this.$.txtBuildingName.value != '' ? this.$.txtBuildingName.value : null;
+        var address = this.$.txtAddress.value != '' ? this.$.txtAddress.value : null;
+        var status = this.$.menuStatus.value != '' ? this.$.menuStatus.value : null;
+
+        this.$.ownersApi.searchBuildings('1', '20', buildingName, address, status)
+                .then(this._setPropertyResponseResults.bind(this, '_buildings'))
+                .catch(this.fire.bind(this, 'toast', {message: 'Failed to search buildings', type: 'danger'}))
+                .finally(this.set.bind(this, 'refreshing', false));*/
+      },
+
+      _viewBuildingTapped: function (e) {
+        this.fire('ct-view-building-tapped', e.model.item.id);
+      },
+
+      _newBuildingTapped: function () {
+        this.fire('ct-new-building-tapped', this.ownerId);
+      }
     });
   </script>
+
 </dom-module>
+
