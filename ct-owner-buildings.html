@@ -2,10 +2,12 @@
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 
 <link rel="import" href="../ct-core-utils/ct-api-consumer-behaviour.html">
 <link rel="import" href="../ct-owners-api/ct-owners-api.html">
 <link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../paper-input-location/paper-input-location.html">
 
 <!--
  `ct-owner-buildings`
@@ -72,30 +74,52 @@
             <div class="table-responsive">
               <table class="table table-striped table-bordered table-hover table-middle">
                 <thead>
-                  <th>Building Name</th>
-                  <th>Address</th>
-                  <th># Water Meters</th>
-                  <th># Elec Meters</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                <th>Building Name</th>
+                <th>Address</th>
+                <th># Water Meters</th>
+                <th># Elec Meters</th>
+                <th>Status</th>
+                <th>Actions</th>
                 </thead>
-                <iron-a11y-keys id="a11y" keys="enter" on-keys-pressed="_searchTapped"></iron-a11y-keys>
                 <tr>
-                  <td><paper-input id="txtBuildingName" label="Building Name"></paper-input></td>
-                  <td><paper-input id="txtAddress" label="Address"></paper-input></td>
+                  <td>
+                    <paper-input id="txtBuildingName" label="Building Name"></paper-input>
+                    <iron-a11y-keys id="a11y" target="[[ _searchBuildingName ]]" keys="enter" on-keys-pressed="_searchTapped"></iron-a11y-keys>
+                  </td>
+                  <td><paper-input-location
+                          id="addressSearchInput"
+                          maps-api-key="[[ googleMapApiKey ]]"
+                          label="Search address"
+                          on-place-clicked="_searchTapped">
+                  </paper-input-location></td>
                   <td></td>
                   <td></td>
-                  <td><paper-input id="menuStatus" label="Status"></paper-input></td>
+                  <td>
+                    <paper-dropdown-menu
+                            id="statusDropDown"
+                            class="custom-dropdown"
+                            label="Status"
+                            always-float-label
+                            noink
+                            no-animations>
+                      <paper-listbox class="dropdown-content" on-iron-select="_searchTapped">
+                        <paper-item value="0">Pending</paper-item>
+                        <paper-item value="1">Deed Request Failed</paper-item>
+                        <paper-item value="2">Invalid</paper-item>
+                        <paper-item value="3">Valid</paper-item>
+                      </paper-listbox>
+                    </paper-dropdown-menu>
+                  </td>
                   <td><paper-button class="btn btn-primary btn-block" on-tap="_searchTapped" raised>Search</paper-button></td>
                 </tr>
                 <tbody>
                 <template is="dom-repeat" items="{{ _buildings }}">
                   <tr>
                     <td>[[item.name]]</td>
-                    <td>UC</td>
-                    <td>UC</td>
-                    <td>UC</td>
-                    <td>UC</td>
+                    <td>[[item.address]]</td>
+                    <td>[[item.waterMeterCount]]</td>
+                    <td>[[item.elecMeterCount]]</td>
+                    <td>[[item.status]]</td>
                     <td class="text-center"><paper-button class="table-button btn-primary btn-sm" on-tap="_viewBuildingTapped" raised>View/Edit</paper-button></td>
                   </tr>
                 </template>
@@ -116,16 +140,29 @@
       behaviors: [CT.Behaviours.ApiConsumer],
 
       properties: {
+        googleMapApiKey: String,
         ownerId: String,
         refreshing: {
           type: Boolean,
           notify: true
-        }
+        },
+        _searchBuildingName: {
+          type: Object,
+          value: function() {
+            return this.$.txtBuildingName;
+          }
+        },
+        _searchStatus: {
+          type: Object,
+          value: function() {
+            return this.$.statusDropDown;
+          }
+        },
       },
 
-      ready: function() {
-        this._init();
-      },
+      observers: [
+        '_init(ownerId)'
+      ],
 
       refresh: function() {
         this._init();
@@ -137,23 +174,57 @@
       },
 
       _getAllOwnerBuildings: function() {
-        // ToDo:
-/*        this.$.ownersApi.filterOwnerBuildings('1', '20')
-                .then(this._setPropertyResponseResults.bind(this, '_ownersList'))
+        this.$.ownersApi.filterBuildings(this.ownerId, '1', '20')
+                .then(this._setPropertyResponseResults.bind(this, '_buildings'))
                 .catch(this.fire.bind(this, 'toast', {message: 'Failed to load owners', type: 'danger'}))
-                .finally(this.set.bind(this, 'refreshing', false));*/
+                .finally(this.set.bind(this, 'refreshing', false));
+      },
+
+      _getSearchAddress: function () {
+        var addressComponents = this.$.addressSearchInput.place.address_components;
+
+        if (addressComponents) {
+          return {
+            streetNumber: this._findAddressComponentValue(addressComponents, 'street_number'),
+            streetName: this._findAddressComponentValue(addressComponents, 'route'),
+            suburb: this._findAddressComponentValue(addressComponents, 'sublocality'),
+            city: this._findAddressComponentValue(addressComponents, 'locality'),
+            province: this._findAddressComponentValue(addressComponents, 'administrative_area_level_1'),
+            country: this._findAddressComponentValue(addressComponents, 'country'),
+            postalCode: this._findAddressComponentValue(addressComponents, 'postal_code')
+          };
+        } else {
+          return undefined
+        }
+      },
+
+      _findAddressComponentValue: function (addressComponents, fieldType) {
+        var fields = addressComponents.filter(function(component) {
+          return component.types.filter(function (type) {
+                    return type === fieldType;
+                  }).length === 1;
+        });
+        return fields.length > 0 ? fields[0].long_name : null;
       },
 
       _searchTapped: function (e) {
-        // ToDo:
-/*        var buildingName = this.$.txtBuildingName.value != '' ? this.$.txtBuildingName.value : null;
-        var address = this.$.txtAddress.value != '' ? this.$.txtAddress.value : null;
-        var status = this.$.menuStatus.value != '' ? this.$.menuStatus.value : null;
 
-        this.$.ownersApi.searchBuildings('1', '20', buildingName, address, status)
+        var searchAddress = this._getSearchAddress();
+
+        var buildingName = this.$.txtBuildingName.value != '' ? this.$.txtBuildingName.value : null;
+        var streetNumber = searchAddress ? searchAddress.streetNumber : null;
+        var streetName = searchAddress ? searchAddress.streetName : null;
+        var suburb = searchAddress ? searchAddress.suburb : null;
+        var city = searchAddress ? searchAddress.city : null;
+        var province = searchAddress ? searchAddress.province : null;
+        var country = searchAddress ? searchAddress.country : null;
+        var postalCode = searchAddress ? searchAddress.postalCode : null;
+        var status = e.detail.item.getAttribute('value');
+
+        this.$.ownersApi.searchBuildings(this.ownerId, '1', '20', buildingName, streetNumber, streetName, suburb, city, province, country, postalCode, status)
                 .then(this._setPropertyResponseResults.bind(this, '_buildings'))
                 .catch(this.fire.bind(this, 'toast', {message: 'Failed to search buildings', type: 'danger'}))
-                .finally(this.set.bind(this, 'refreshing', false));*/
+                .finally(this.set.bind(this, 'refreshing', false));
       },
 
       _viewBuildingTapped: function (e) {
