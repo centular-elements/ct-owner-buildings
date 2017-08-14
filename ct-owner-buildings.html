@@ -86,12 +86,14 @@
                     <paper-input id="txtBuildingName" label="Building Name"></paper-input>
                     <iron-a11y-keys id="a11y" target="[[ _searchBuildingName ]]" keys="enter" on-keys-pressed="_searchTapped"></iron-a11y-keys>
                   </td>
-                  <td><paper-input-location
-                          id="addressSearchInput"
-                          maps-api-key="[[ googleMapApiKey ]]"
-                          label="Search address"
-                          on-place-clicked="_searchTapped">
-                  </paper-input-location></td>
+                  <td>
+                    <paper-input-location
+                            id="addressSearchInput"
+                            maps-api-key="[[ googleMapApiKey ]]"
+                            label="Search address"
+                            on-place-clicked="_searchTapped">
+                    </paper-input-location>
+                  </td>
                   <td></td>
                   <td></td>
                   <td>
@@ -102,11 +104,13 @@
                             always-float-label
                             noink
                             no-animations>
-                      <paper-listbox class="dropdown-content" on-iron-select="_searchTapped">
-                        <paper-item value="0">Pending</paper-item>
+                      <paper-listbox class="dropdown-content" on-iron-select="_searchTapped" selected="0">
+                        <paper-item>Any</paper-item>
+                        <paper-item value="0">Requesting Deed</paper-item>
                         <paper-item value="1">Deed Request Failed</paper-item>
-                        <paper-item value="2">Invalid</paper-item>
-                        <paper-item value="3">Valid</paper-item>
+                        <paper-item value="2">Pending</paper-item>
+                        <paper-item value="3">Invalid</paper-item>
+                        <paper-item value="4">Valid</paper-item>
                       </paper-listbox>
                     </paper-dropdown-menu>
                   </td>
@@ -152,6 +156,12 @@
             return this.$.txtBuildingName;
           }
         },
+        _addressSearchInput: {
+          type: Object,
+          value: function() {
+            return this.$.addressSearchInput;
+          }
+        },
         _searchStatus: {
           type: Object,
           value: function() {
@@ -170,7 +180,7 @@
 
       _init: function() {
         //this.refreshing = true;
-        this._getAllOwnerBuildings();
+        //this._getAllOwnerBuildings();
       },
 
       _getAllOwnerBuildings: function() {
@@ -207,6 +217,10 @@
         return fields.length > 0 ? fields[0].long_name : null;
       },
 
+      _statusSelected: function(e) {
+        console.log('status selected');
+      },
+
       _searchTapped: function (e) {
 
         var searchAddress = this._getSearchAddress();
@@ -219,7 +233,8 @@
         var province = searchAddress ? searchAddress.province : null;
         var country = searchAddress ? searchAddress.country : null;
         var postalCode = searchAddress ? searchAddress.postalCode : null;
-        var status = e.detail.item.getAttribute('value');
+        var selectedStatus = this.$.statusDropDown.selectedItem ? this.$.statusDropDown.selectedItem.getAttribute('value') : undefined;
+        var status = e.detail.item ? e.detail.item.getAttribute('value') : selectedStatus;
 
         this.$.ownersApi.searchBuildings(this.ownerId, '1', '20', buildingName, streetNumber, streetName, suburb, city, province, country, postalCode, status)
                 .then(this._setPropertyResponseResults.bind(this, '_buildings'))
