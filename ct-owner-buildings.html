@@ -179,15 +179,8 @@
       },
 
       _init: function() {
-        //this.refreshing = true;
-        //this._getAllOwnerBuildings();
-      },
-
-      _getAllOwnerBuildings: function() {
-        this.$.ownersApi.filterBuildings(this.ownerId, '1', '20')
-                .then(this._setPropertyResponseResults.bind(this, '_buildings'))
-                .catch(this.fire.bind(this, 'toast', {message: 'Failed to load owners', type: 'danger'}))
-                .finally(this.set.bind(this, 'refreshing', false));
+        this.refreshing = true;
+        this._searchTapped({detail: {}})
       },
 
       _getSearchAddress: function () {
@@ -215,10 +208,6 @@
                   }).length === 1;
         });
         return fields.length > 0 ? fields[0].long_name : null;
-      },
-
-      _statusSelected: function(e) {
-        console.log('status selected');
       },
 
       _searchTapped: function (e) {
